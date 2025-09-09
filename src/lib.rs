@@ -16,75 +16,48 @@
 //!
 //! ### Usage
 //!
-//! The [specification](https://github.com/opencomputeproject/ocp-diag-core/tree/main/json_spec) does not impose any particular level of usage. To be compliant, a diagnostic package just needs output the correct artifact messages in the correct format. However, any particular such diagnostic is free to choose what aspects it needs to use/output; eg. a simple validation test may not output any measurements, opting to just have a final Diagnosis outcome.
+//! To use the SDK, you need to create a client and then use the client to get a quote. To create the client you need a URL we will provide you with.
 //!
-//!   A very simple starter example, which just outputs a diagnosis:
+//!   A very simple starter example, which just outputs a quote:
 //!   ```rust
-//!   use anyhow::Result;
-//!   
-//!   use ocptv::output as tv;
-//!   use ocptv::{ocptv_diagnosis_fail, ocptv_diagnosis_pass};
-//!   use rand::Rng;
-//!   use tv::{TestResult, TestStatus};
-//!   
-//!   fn get_fan_speed() -> i32 {
-//!       let mut rng = rand::thread_rng();
-//!       rng.gen_range(1500..1700)
-//!   }
-//!   
-//!   async fn run_diagnosis_step(step: tv::ScopedTestStep) -> Result<TestStatus, tv::OcptvError> {
-//!       let fan_speed = get_fan_speed();
-//!   
-//!       if fan_speed >= 1600 {
-//!           step.add_diagnosis("fan_ok", tv::DiagnosisType::Pass).await?;
-//!       } else {
-//!           step.add_diagnosis("fan_low", tv::DiagnosisType::Fail).await?;
-//!       }
-//!   
-//!       Ok(TestStatus::Complete)
-//!   }
-//!   
-//!   async fn run_diagnosis_macros_step(step: tv::ScopedTestStep) -> Result<TestStatus, tv::OcptvError> {
-//!       let fan_speed = get_fan_speed();
-//!   
-//!       /// using the macro, the source location is filled automatically
-//!       if fan_speed >= 1600 {
-//!           ocptv_diagnosis_pass!(step, "fan_ok").await?;
-//!       } else {
-//!           ocptv_diagnosis_fail!(step, "fan_low").await?;
-//!       }
-//!   
-//!       Ok(TestStatus::Complete)
-//!   }
-//!   
+//!   use eyre::Result;
+//!   use sdk_off_chain as sdk;
+//!   use tracing::*;
+//!   use tracing_subscriber;
+
 //!   #[tokio::main]
 //!   async fn main() -> Result<()> {
-//!       let dut = tv::DutInfo::builder("dut0").build();
-//!   
-//!       tv::TestRun::builder("simple measurement", "1.0")
-//!           .build()
-//!           .scope(dut, |r| async move {
-//!               r.add_step("step0")
-//!                   .scope(run_diagnosis_step)
-//!                   .await?;
-//!   
-//!               r.add_step("step1")
-//!                   .scope(run_diagnosis_macros_step)
-//!                   .await?;
-//!   
-//!               Ok(tv::TestRunOutcome {
-//!                   status: TestStatus::Complete,
-//!                   result: TestResult::Pass,
-//!               })
-//!           })
-//!           .await?;
-//!   
-//!       Ok(())
+//!   tracing_subscriber::fmt::init();
+
+//!   let config = sdk::Config::builder()
+//!     .network(sdk::Network::Mainnet)
+//!     .url("http://localhost:50051")?
+//!     .is_final_url(true)
+//!     .build()?;
+
+//!   let mut client = sdk::Client::new(config).await?;
+
+//!   let quote = client
+//!     .get_quote(sdk::QuoteRequest {
+//!         token_mint_x: "DdLxrGFs2sKYbbqVk76eVx9268ASUdTMAhrsqphqDuX".to_string(),
+//!         token_mint_y: "So11111111111111111111111111111111111111112".to_string(),
+//!         amount_in: 1000000000000000000,
+//!         is_swap_x_to_y: true,
+//!     })
+//!   .await?;
+
+//!   info!("Quote: {:?}", quote);
+
+//!   Ok(())
 //!   }
 //!   ```
 pub mod integrations_pb {
-    tonic::include_proto!("darklake.integrations.v1");
+    tonic::include_proto!("darklake.v1");
 }
 
 pub mod client;
 pub mod core;
+
+pub use client::Client;
+pub use client::service::{QuoteRequest, QuoteResponse};
+pub use core::config::{Config, Network};

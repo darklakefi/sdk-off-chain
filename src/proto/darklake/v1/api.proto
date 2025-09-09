@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package darklake.integrations.v1;
+package darklake.v1;
 
 import "validate/validate.proto";
 
