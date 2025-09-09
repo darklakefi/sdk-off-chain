@@ -1,0 +1,20 @@
+[package]
+name = "sdk-off-chain"
+version = "0.1.0"
+edition = "2024"
+description = "Darklake SDK for off-chain integrations"
+license = "MIT"
+
+[dependencies]
+eyre = "0.6.12"
+prost = "0.14.1"
+regex = "1.11.2"
+tokio = { version = "1.47.1", features = ["full", "rt-multi-thread"] }
+tonic = "0.14.2"
+tonic-prost = "0.14.2"
+tracing = "0.1.41"
+url = "2.5.7"
+
+[build-dependencies]
+tonic-build = "0.14.2"
+tonic-prost-build = "0.14.2"
