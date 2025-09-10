@@ -9,7 +9,7 @@ use crate::integrations_pb::TradeStatus as ProtoTradeStatus;
 /// Trade status
 ///
 /// This enum is used to define the status of a trade.
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum TradeStatus {
     /// The trade is unsigned.
     Unsigned,

@@ -4,6 +4,8 @@
 // license that can be found in the LICENSE file or at
 // https://opensource.org/licenses/MIT.
 
+use rand::distr::{Alphanumeric, SampleString};
+
 use crate::integrations_pb::{
     CheckTradeStatusRequest as ProtoCheckTradeStatusRequest,
     CheckTradeStatusResponse as ProtoCheckTradeStatusResponse,
@@ -23,6 +25,55 @@ pub struct CheckTradeStatusRequest {
     pub tracking_id: String,
     /// The trade id.
     pub trade_id: String,
+}
+
+impl CheckTradeStatusRequest {
+    pub fn builder() -> CheckTradeStatusRequestBuilder {
+        CheckTradeStatusRequestBuilder::new()
+    }
+}
+
+/// CheckTradeStatusRequestBuilder
+///
+/// This struct is used to build a CheckTradeStatusRequest.
+#[derive(Debug, Clone)]
+pub struct CheckTradeStatusRequestBuilder {
+    /// The tracking id for the trade.
+    pub tracking_id: Option<String>,
+    /// The trade id.
+    pub trade_id: String,
+}
+
+impl CheckTradeStatusRequestBuilder {
+    pub fn new() -> Self {
+        Self {
+            tracking_id: None,
+            trade_id: String::new(),
+        }
+    }
+
+    pub fn tracking_id(mut self, tracking_id: &str) -> Self {
+        self.tracking_id = Some(tracking_id.to_string());
+        self
+    }
+
+    pub fn trade_id(mut self, trade_id: &str) -> Self {
+        self.trade_id = trade_id.to_string();
+        self
+    }
+
+    pub fn build(self) -> CheckTradeStatusRequest {
+        let tracking_id: String;
+        if self.tracking_id.is_none() {
+            tracking_id = Alphanumeric.sample_string(&mut rand::rng(), 12);
+        } else {
+            tracking_id = self.tracking_id.unwrap();
+        }
+        CheckTradeStatusRequest {
+            tracking_id: tracking_id,
+            trade_id: self.trade_id,
+        }
+    }
 }
 
 /// Convert from CheckTradeStatusRequest to ProtoCheckTradeStatusRequest

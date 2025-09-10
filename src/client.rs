@@ -4,14 +4,19 @@
 // license that can be found in the LICENSE file or at
 // https://opensource.org/licenses/MIT.
 
+use std::time::Duration;
+
 use crate::{
     core::config::Config,
     models::{
-        CreateUnsignedTransactionRequest, CreateUnsignedTransactionResponse, QuoteRequest,
-        QuoteResponse, SendSignedTransactionRequest, SendSignedTransactionResponse,
+        CheckTradeStatusRequest, CheckTradeStatusResponse, CreateUnsignedTransactionRequest,
+        CreateUnsignedTransactionResponse, GetTradesListByUserRequest, GetTradesListByUserResponse,
+        QuoteRequest, QuoteResponse, SendSignedTransactionRequest, SendSignedTransactionResponse,
+        TradeStatus,
     },
 };
 use eyre::Result;
+use tokio::sync::mpsc;
 use tracing::*;
 pub mod grpc_client;
 pub mod service;
@@ -96,5 +101,96 @@ impl Client {
         request: SendSignedTransactionRequest,
     ) -> Result<SendSignedTransactionResponse> {
         self.service.send_signed_transaction(request).await
+    }
+
+    /// Check trade status
+    ///
+    /// This is used to check the status of a trade. This function checks just one time so it needs to be put in a loop to check the status until it is confirmed.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the trade status cannot be checked.
+    ///
+    /// # Returns
+    ///
+    /// Returns the `CheckTradeStatusResponse` instance.
+    pub async fn check_trade_status(
+        &mut self,
+        request: CheckTradeStatusRequest,
+    ) -> Result<CheckTradeStatusResponse> {
+        self.service.check_trade_status(request).await
+    }
+
+    /// Check trade status loop
+    ///
+    /// This is used to check the status of a trade. This function checks until the trade is completed.
+    /// It also sends the status of the trade to the channel if provided.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the trade status cannot be checked.
+    ///
+    /// # Returns
+    ///
+    /// Returns the `CheckTradeStatusResponse` instance.
+    pub async fn check_trade_status_loop(
+        &mut self,
+        request: CheckTradeStatusRequest,
+        tx: Option<mpsc::Sender<TradeStatus>>,
+        interval_millis: Option<u64>,
+        max_attempts: Option<u32>,
+    ) -> Result<CheckTradeStatusResponse> {
+        let mut attempts = 0;
+        let interval = interval_millis.unwrap_or(500);
+        let interval_check = Duration::from_millis(interval);
+        loop {
+            let tx = tx.clone();
+            let response = self.check_trade_status(request.clone()).await?;
+            if tx.is_some() {
+                if tx.unwrap().send(response.status.clone()).await.is_err() {
+                    return Err(eyre::eyre!("Receiver channel closed"));
+                }
+            }
+            match response.status {
+                TradeStatus::Confirmed => {}
+                TradeStatus::Settled => {
+                    return Ok(response);
+                }
+                TradeStatus::Failed => {
+                    return Ok(response);
+                }
+                TradeStatus::Cancelled => {
+                    return Ok(response);
+                }
+                TradeStatus::Unsigned => {}
+                TradeStatus::Signed => {}
+                TradeStatus::Slashed => {
+                    return Ok(response);
+                }
+            }
+            if max_attempts.is_some() && attempts >= max_attempts.unwrap() {
+                return Err(eyre::eyre!("Max attempts reached"));
+            }
+            attempts += 1;
+            tokio::time::sleep(interval_check).await;
+        }
+    }
+
+    /// Get trades list by user
+    ///
+    /// This is used to get the trades list by user.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the trades list cannot be retrieved.
+    ///
+    /// # Returns
+    ///
+    /// Returns the `GetTradesListByUserResponse` instance.
+    pub async fn get_trades_list_by_user(
+        &mut self,
+        request: GetTradesListByUserRequest,
+    ) -> Result<GetTradesListByUserResponse> {
+        self.service.get_trades_list_by_user(request).await
     }
 }

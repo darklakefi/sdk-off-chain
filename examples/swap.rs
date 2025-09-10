@@ -4,19 +4,19 @@
 // license that can be found in the LICENSE file or at
 // https://opensource.org/licenses/MIT.
 
+use bincode::{deserialize, serialize};
 use eyre::Result;
-use solana_sdk::signature::{Keypair, Signer};
+use solana_sdk::{signature::Keypair, transaction::Transaction};
 
-use sdk_off_chain as sdk;
+use sdk_off_chain::{self as sdk, TradeStatus};
+use tokio::sync::mpsc;
 use tracing::*;
 use tracing_subscriber;
 
 use base64::prelude::*;
-use bincode::config;
-use bincode::serde::decode_from_slice;
-use solana_sdk::transaction::VersionedTransaction;
-use solana_sdk::transport::TransportError;
-use std::io::{Cursor, ErrorKind};
+use solana_client::nonblocking::rpc_client::RpcClient;
+use solana_sdk::hash::Hash;
+use std::io::ErrorKind;
 
 /// Show how to run a swap transaction using Darklake DEX.
 ///
@@ -33,75 +33,113 @@ async fn main() -> Result<()> {
 
     let mut client = sdk::Client::new(config).await?;
 
-    // Generate a random wallet address
-    let keypair = Keypair::new();
-    let wallet_address = keypair.pubkey().to_string();
+    // Generate keypair from wallet secrets, This secret key is for demo purposes only.
+    let secret: [u8; 32] = [
+        73, 119, 63, 0, 7, 178, 225, 187, 108, 179, 236, 246, 77, 91, 48, 8, 92, 241, 232, 101,
+        215, 54, 149, 16, 178, 166, 236, 71, 237, 30, 204, 226,
+    ];
+    let keypair = Keypair::new_from_array(secret);
+    // Wallet address for demo purposes only.
+    let wallet_address = "4bRZeVcTPFTFwdL8hgbEX3gdzQ37v2vr2GSmvR7X4Bsp".to_string();
 
     let request = sdk::CreateUnsignedTransactionRequest::builder()
         .user_address(&wallet_address)
         .token_mint_x("DdLxrGFs2sKYbbqVk76eVx9268ASUdTMAhrsqphqDuX")
-        .token_mint_y("So11111111111111111111111111111111111111112")
-        .amount_in(1000000000000000000)
-        .min_out(900000000000000000)
+        .token_mint_y("HXsKnhXPtGr2mq4uTpxbxyy7ZydYWJwx4zMuYPEDukY")
+        .amount_in(1000000)
+        .min_out(100000)
         .build();
 
     let response = client.create_unsigned_transaction(request).await?;
+    let trade_id = response.trade_id;
 
-    info!("Unsigned transaction: {:?}", response.unsigned_transaction);
     // response.unsigned_transaction should be sent to the wallet for the signing.
-    // This code simulate the signed process
-    let transaction = deserialize_transaction(&response.unsigned_transaction)?;
-    info!("Deserialized transaction: {:?}", transaction);
-    let signed_tx = sign_transaction(transaction, &[&keypair])?;
-    info!("Signed transaction: {:?}", signed_tx);
-    let signed_tx_base64 = encode_transaction_to_base64(&signed_tx)?;
+    // This code simulates the signed process
+    let signed_tx_base64 =
+        get_base64_signed_transaction(&response.unsigned_transaction, &keypair).await?;
     // then the signed transaction should be sent to the Darklake DEX for the execution.
 
-    info!("Signed transaction base64: {:?}", signed_tx_base64);
     let request = sdk::SendSignedTransactionRequest::builder()
         .signed_transaction(&signed_tx_base64)
-        .trade_id(&response.trade_id)
+        .trade_id(&trade_id)
         .build();
 
     let response = client.send_signed_transaction(request).await?;
 
     info!("Signed transaction response: {:?}", response);
 
+    let (tx, mut rx) = mpsc::channel::<TradeStatus>(10);
+    let listener = tokio::spawn(async move {
+        info!("Listening for trade status updates...");
+        while let Some(status_update) = rx.recv().await {
+            info!("Received status update: {:?}", status_update);
+        }
+    });
+
+    let trade_result = client
+        .check_trade_status_loop(
+            sdk::CheckTradeStatusRequest::builder()
+                .trade_id(&trade_id)
+                .build(),
+            Some(tx),
+            None,
+            None,
+        )
+        .await?;
+    info!("Trade result: {:?}", trade_result);
+
+    listener.await?;
+
     Ok(())
 }
 
-fn deserialize_transaction(base64_str: &str) -> Result<VersionedTransaction> {
+async fn get_recent_blockhash() -> Result<Hash> {
+    let rpc_client = RpcClient::new("https://api.devnet.solana.com".to_string());
+    let recent_blockhash: Hash = rpc_client.get_latest_blockhash().await?;
+    Ok(recent_blockhash)
+}
+
+async fn get_base64_signed_transaction(
+    unsigned_transaction: &str,
+    keypair: &Keypair,
+) -> Result<String> {
+    let transaction = deserialize_transaction(&unsigned_transaction)?;
+    info!("Deserialized transaction: {:?}", transaction);
+    let recent_blockhash: Hash = get_recent_blockhash().await?;
+    let signed_tx = sign_transaction(transaction, &[&keypair], recent_blockhash)?;
+    info!("Signed transaction: {:?}", signed_tx);
+    let signed_tx_base64 = encode_transaction_to_base64(&signed_tx)?;
+    Ok(signed_tx_base64)
+}
+
+fn deserialize_transaction(base64_str: &str) -> Result<Transaction> {
+    // Decode the Base64 string into a byte vector.
     let decoded_bytes = BASE64_STANDARD
         .decode(base64_str)
         .map_err(|e| std::io::Error::new(ErrorKind::InvalidData, e))?;
 
-    let (transaction, _): (VersionedTransaction, _) =
-        decode_from_slice(&decoded_bytes, config::standard())
-            .map_err(|e| std::io::Error::new(ErrorKind::InvalidData, e.to_string()))?;
+    // Use `bincode::deserialize` directly on the byte slice.
+    let transaction = deserialize(&decoded_bytes)
+        .map_err(|e| std::io::Error::new(ErrorKind::InvalidData, e.to_string()))?;
 
     Ok(transaction)
 }
 
 fn sign_transaction(
-    transaction: VersionedTransaction,
+    mut transaction: Transaction,
     signers: &[&Keypair],
-) -> Result<VersionedTransaction> {
-    // The `try_new` method is the correct way to create a signed VersionedTransaction.
-    // It takes a message and a slice of signers.
-    let signed_tx = VersionedTransaction::try_new(transaction.message, signers).map_err(|e| {
-        eprintln!("Failed to sign transaction: {:?}", e);
-        std::io::Error::new(ErrorKind::Other, "Failed to sign transaction")
-    })?;
-
-    Ok(signed_tx)
+    recent_blockhash: Hash,
+) -> Result<Transaction> {
+    transaction.sign(signers, recent_blockhash);
+    Ok(transaction)
 }
 
-fn encode_transaction_to_base64(transaction: &VersionedTransaction) -> Result<String> {
-    // 1. Serialize the VersionedTransaction's message to a byte vector.
-    // The serialize method returns a Vec<u8>, so we assign it directly.
-    let encoded_bytes = transaction.message.serialize();
+fn encode_transaction_to_base64(transaction: &Transaction) -> Result<String> {
+    // Use `bincode::serialize` to convert the transaction to a byte vector.
+    let encoded_bytes = serialize(transaction)
+        .map_err(|e| std::io::Error::new(ErrorKind::InvalidData, e.to_string()))?;
 
-    // 2. Encode the byte vector to a Base64 string.
+    // Encode the byte vector to a Base64 string.
     let base64_string = BASE64_STANDARD.encode(&encoded_bytes);
 
     Ok(base64_string)
