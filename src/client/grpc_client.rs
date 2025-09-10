@@ -12,10 +12,23 @@ use tracing::*;
 use eyre::Result;
 
 use crate::{
-    client::service::{QuoteRequest, QuoteResponse, Service},
+    client::service::Service,
     integrations_pb::{
+        CheckTradeStatusRequest as ProtoCheckTradeStatusRequest,
+        CheckTradeStatusResponse as ProtoCheckTradeStatusResponse,
+        CreateUnsignedTransactionRequest as ProtoCreateUnsignedTransactionRequest,
+        CreateUnsignedTransactionResponse as ProtoCreateUnsignedTransactionResponse,
+        GetTradesListByUserRequest as ProtoGetTradesListByUserRequest,
+        GetTradesListByUserResponse as ProtoGetTradesListByUserResponse,
         QuoteRequest as ProtoQuoteRequest, QuoteResponse as ProtoQuoteResponse,
+        SendSignedTransactionRequest as ProtoSendSignedTransactionRequest,
+        SendSignedTransactionResponse as ProtoSendSignedTransactionResponse,
         darklake_integrations_service_client::DarklakeIntegrationsServiceClient,
+    },
+    models::{
+        CheckTradeStatusRequest, CheckTradeStatusResponse, CreateUnsignedTransactionRequest,
+        CreateUnsignedTransactionResponse, GetTradesListByUserRequest, GetTradesListByUserResponse,
+        QuoteRequest, QuoteResponse, SendSignedTransactionRequest, SendSignedTransactionResponse,
     },
 };
 
@@ -98,6 +111,98 @@ impl DarklakeIntegrationsClient {
 
         Ok(response.into_inner())
     }
+
+    /// Create unsigned transaction
+    ///
+    /// This is used to create an unsigned transaction for the Darklake Integrations service.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the unsigned transaction cannot be created.
+    ///
+    /// # Returns
+    ///
+    /// Returns the `ProtoCreateUnsignedTransactionResponse` instance.
+    async fn create_unsigned_transaction(
+        &mut self,
+        request: ProtoCreateUnsignedTransactionRequest,
+    ) -> Result<ProtoCreateUnsignedTransactionResponse, GrpcClientError> {
+        debug!("Creating unsigned transaction for request: {:?}", request);
+        let response = self
+            .client
+            .create_unsigned_transaction(Request::new(request))
+            .await?;
+        Ok(response.into_inner())
+    }
+
+    /// Send signed transaction
+    ///
+    /// This is used to send a signed transaction to the Darklake Integrations service.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the signed transaction cannot be sent.
+    ///
+    /// # Returns
+    ///
+    /// Returns the `ProtoSendSignedTransactionResponse` instance.
+    async fn send_signed_transaction(
+        &mut self,
+        request: ProtoSendSignedTransactionRequest,
+    ) -> Result<ProtoSendSignedTransactionResponse, GrpcClientError> {
+        debug!("Sending signed transaction for request: {:?}", request);
+        let response = self
+            .client
+            .send_signed_transaction(Request::new(request))
+            .await?;
+        Ok(response.into_inner())
+    }
+
+    /// Check trade status
+    ///
+    /// This is used to check the status of a trade.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the trade status cannot be checked.
+    ///
+    /// # Returns
+    ///
+    /// Returns the `ProtoCheckTradeStatusResponse` instance.
+    async fn check_trade_status(
+        &mut self,
+        request: ProtoCheckTradeStatusRequest,
+    ) -> Result<ProtoCheckTradeStatusResponse, GrpcClientError> {
+        debug!("Checking trade status for request: {:?}", request);
+        let response = self
+            .client
+            .check_trade_status(Request::new(request))
+            .await?;
+        Ok(response.into_inner())
+    }
+
+    /// Get trades list by user
+    ///
+    /// This is used to get the trades list by user.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the trades list cannot be retrieved.
+    ///
+    /// # Returns
+    ///
+    /// Returns the `ProtoGetTradesListByUserResponse` instance.
+    async fn get_trades_list_by_user(
+        &mut self,
+        request: ProtoGetTradesListByUserRequest,
+    ) -> Result<ProtoGetTradesListByUserResponse, GrpcClientError> {
+        debug!("Getting trades list by user for request: {:?}", request);
+        let response = self
+            .client
+            .get_trades_list_by_user(Request::new(request))
+            .await?;
+        Ok(response.into_inner())
+    }
 }
 
 #[async_trait]
@@ -115,6 +220,38 @@ impl Service for DarklakeIntegrationsClient {
     /// Returns the `QuoteResponse` instance.
     async fn quote(&mut self, request: QuoteRequest) -> Result<QuoteResponse> {
         let proto_response = self.get_quote(request.into()).await?;
+        Ok(proto_response.into())
+    }
+
+    async fn create_unsigned_transaction(
+        &mut self,
+        request: CreateUnsignedTransactionRequest,
+    ) -> Result<CreateUnsignedTransactionResponse> {
+        let proto_response = self.create_unsigned_transaction(request.into()).await?;
+        Ok(proto_response.into())
+    }
+
+    async fn send_signed_transaction(
+        &mut self,
+        request: SendSignedTransactionRequest,
+    ) -> Result<SendSignedTransactionResponse> {
+        let proto_response = self.send_signed_transaction(request.into()).await?;
+        Ok(proto_response.into())
+    }
+
+    async fn check_trade_status(
+        &mut self,
+        request: CheckTradeStatusRequest,
+    ) -> Result<CheckTradeStatusResponse> {
+        let proto_response = self.check_trade_status(request.into()).await?;
+        Ok(proto_response.into())
+    }
+
+    async fn get_trades_list_by_user(
+        &mut self,
+        request: GetTradesListByUserRequest,
+    ) -> Result<GetTradesListByUserResponse> {
+        let proto_response = self.get_trades_list_by_user(request.into()).await?;
         Ok(proto_response.into())
     }
 }

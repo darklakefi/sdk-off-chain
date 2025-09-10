@@ -4,7 +4,13 @@
 // license that can be found in the LICENSE file or at
 // https://opensource.org/licenses/MIT.
 
-use crate::{QuoteRequest, QuoteResponse, core::config::Config};
+use crate::{
+    core::config::Config,
+    models::{
+        CreateUnsignedTransactionRequest, CreateUnsignedTransactionResponse, QuoteRequest,
+        QuoteResponse, SendSignedTransactionRequest, SendSignedTransactionResponse,
+    },
+};
 use eyre::Result;
 use tracing::*;
 pub mod grpc_client;
@@ -58,5 +64,37 @@ impl Client {
     /// Returns the `QuoteResponse` instance.
     pub async fn get_quote(&mut self, request: QuoteRequest) -> Result<QuoteResponse> {
         self.service.quote(request).await
+    }
+
+    /// Creates an unsigned transaction for the Darklake Integrations service.
+    ///
+    /// This is used to create an unsigned transaction for the Darklake Integrations service.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the unsigned transaction cannot be created.
+    pub async fn create_unsigned_transaction(
+        &mut self,
+        request: CreateUnsignedTransactionRequest,
+    ) -> Result<CreateUnsignedTransactionResponse> {
+        self.service.create_unsigned_transaction(request).await
+    }
+
+    /// Sends a signed transaction to the Darklake Integrations service.
+    ///
+    /// This is used to send a signed transaction to the Darklake Integrations service.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the signed transaction cannot be sent.
+    ///
+    /// # Returns
+    ///
+    /// Returns the `SendSignedTransactionResponse` instance.
+    pub async fn send_signed_transaction(
+        &mut self,
+        request: SendSignedTransactionRequest,
+    ) -> Result<SendSignedTransactionResponse> {
+        self.service.send_signed_transaction(request).await
     }
 }
