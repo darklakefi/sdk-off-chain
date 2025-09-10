@@ -57,7 +57,13 @@ pub mod integrations_pb {
 
 pub mod client;
 pub mod core;
+pub mod models;
 
 pub use client::Client;
-pub use client::service::{QuoteRequest, QuoteResponse};
 pub use core::config::{Config, Network};
+pub use models::{
+    CheckTradeStatusRequest, CheckTradeStatusResponse, CreateUnsignedTransactionRequest,
+    CreateUnsignedTransactionResponse, GetTradesListByUserRequest, GetTradesListByUserResponse,
+    QuoteRequest, QuoteResponse, SendSignedTransactionRequest, SendSignedTransactionResponse,
+    TradeStatus,
+};

@@ -18,7 +18,7 @@ async fn main() -> Result<()> {
     tracing_subscriber::fmt::init();
 
     let config = sdk::Config::builder()
-        .network(sdk::Network::Mainnet)
+        .network(sdk::Network::Devnet)
         .url("http://localhost:50051")?
         .is_final_url(true)
         .build()?;

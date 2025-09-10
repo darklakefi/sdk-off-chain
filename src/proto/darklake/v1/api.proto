@@ -2,8 +2,6 @@ syntax = "proto3";
 
 package darklake.v1;
 
-import "validate/validate.proto";
-
 // --------------------------------- ENUMS
 
 enum TradeStatus {
@@ -41,17 +39,9 @@ message Trade {
 }
 
 message QuoteRequest {
-    string token_mint_x = 1 [
-        (validate.rules).string.min_len = 1,
-        (validate.rules).string.max_len = 44,
-        (validate.rules).string.pattern = "^[A-Za-z0-9]+$"
-    ];
-    string token_mint_y = 2 [
-        (validate.rules).string.min_len = 1,
-        (validate.rules).string.max_len = 44,
-        (validate.rules).string.pattern = "^[A-Za-z0-9]+$"
-    ];
-    uint64 amount_in = 3 [(validate.rules).uint64.gt = 0];
+    string token_mint_x = 1;
+    string token_mint_y = 2;
+    uint64 amount_in = 3;
     bool is_swap_x_to_y = 4;
 }
 
@@ -66,27 +56,12 @@ message QuoteResponse {
 }
 
 message CreateUnsignedTransactionRequest {
-    string user_address = 1 [
-        (validate.rules).string.min_len = 1,
-        (validate.rules).string.max_len = 44,
-        (validate.rules).string.pattern = "^[A-Za-z0-9]+$"
-    ];
-    string token_mint_x = 2 [
-        (validate.rules).string.min_len = 1,
-        (validate.rules).string.max_len = 44,
-        (validate.rules).string.pattern = "^[A-Za-z0-9]+$"
-    ];
-    string token_mint_y = 3 [
-        (validate.rules).string.min_len = 1,
-        (validate.rules).string.max_len = 44,
-        (validate.rules).string.pattern = "^[A-Za-z0-9]+$"
-    ];
-    uint64 amount_in   = 4 [(validate.rules).uint64.gt = 0];
-    uint64 min_out     = 5 [(validate.rules).uint64.gt = 0];
-    string tracking_id = 6 [
-        (validate.rules).string.min_len = 1,
-        (validate.rules).string.max_len = 250
-    ];
+    string user_address = 1;
+    string token_mint_x = 2;
+    string token_mint_y = 3;
+    uint64 amount_in   = 4;
+    uint64 min_out     = 5;
+    string tracking_id = 6;
     bool is_swap_x_to_y = 7;
 }
 
@@ -98,19 +73,9 @@ message CreateUnsignedTransactionResponse {
 }
 
 message SendSignedTransactionRequest {
-    string signed_transaction = 1 [
-        (validate.rules).string.min_len = 1,
-        (validate.rules).string.pattern = "^[A-Za-z0-9+/=_-]*$"
-    ];
-    string tracking_id = 2 [
-        (validate.rules).string.min_len = 1,
-        (validate.rules).string.max_len = 250
-    ];
-    string trade_id = 3 [
-        (validate.rules).string.min_len = 1,
-        (validate.rules).string.max_len = 250,
-        (validate.rules).string.pattern = "^[A-Za-z0-9_]*$"
-    ];
+    string signed_transaction = 1;
+    string tracking_id = 2;
+    string trade_id = 3;
 }
 
 message SendSignedTransactionResponse {
@@ -120,15 +85,8 @@ message SendSignedTransactionResponse {
 }
 
 message CheckTradeStatusRequest {
-    string tracking_id = 1 [
-        (validate.rules).string.min_len = 1,
-        (validate.rules).string.max_len = 250
-    ];
-    string trade_id = 2 [
-        (validate.rules).string.min_len = 1,
-        (validate.rules).string.max_len = 250,
-        (validate.rules).string.pattern = "^[A-Za-z0-9_]*$"
-    ];
+    string tracking_id = 1;
+    string trade_id = 2;
 }
 
 message CheckTradeStatusResponse {
@@ -137,11 +95,7 @@ message CheckTradeStatusResponse {
 }
 
 message GetTradesListByUserRequest {
-    string user_address = 1 [
-        (validate.rules).string.min_len = 1,
-        (validate.rules).string.max_len = 44,
-        (validate.rules).string.pattern = "^[A-Za-z0-9]+$"
-    ];
+    string user_address = 1;
     int32 page_size   = 2;
     int32 page_number = 3;
 }
@@ -152,7 +106,7 @@ message GetTradesListByUserResponse {
     int32 current_page    = 3;
 }
 
-
+// --------------------------------- SERVICES
 
 service DarklakeIntegrationsService {
     rpc Quote(QuoteRequest)
