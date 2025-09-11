@@ -1,6 +1,6 @@
 # sdk-off-chain
 
-[![Rust](https://img.shields.io/badge/Rust-1.89.0-orange?logo=rust&logoColor=white)](https://www.rust-lang.org/) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE) [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://conventionalcommits.org)
+[![Darklake-SDK](https://img.shields.io/badge/Darklake-SDK-010f06?labelColor=35d688)](https://darklake.fi/) [![SDK Version](https://img.shields.io/badge/dynamic/toml?url=https%3A%2F%2Fraw.githubusercontent.com%2Fdarklakefi%2Fsdk-off-chain%2Fdevelop%2FCargo.toml&query=%24.package.version&label=SDK%20Version)](Cargo.toml) [![Rust msrv](https://img.shields.io/crates/msrv/darklake-sdk-off-chain?logo=rust)]() [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE) [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://conventionalcommits.org) [![Cargo](https://img.shields.io/crates/v/darklake-sdk-off-chain.svg)](https://crates.io/crates/darklake-sdk-off-chain) [![Documentation](https://img.shields.io/docsrs/darklake-sdk-off-chain)](https://docs.rs/darklake-sdk-off-chain) [![Built for Solana](https://img.shields.io/badge/Solana-000?logo=Solana&logoColor=9945FF)](https://solana.com/)
 
 The **Darklake SDK for off-chain integrations** is a library that provides a set of tools for off-chain integrations.
 

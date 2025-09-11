@@ -51,13 +51,13 @@
 //!   Ok(())
 //!   }
 //!   ```
-pub mod integrations_pb {
+mod integrations_pb {
     tonic::include_proto!("darklake.v1");
 }
 
-pub mod client;
-pub mod core;
-pub mod models;
+mod client;
+mod core;
+mod models;
 
 pub use client::Client;
 pub use core::config::{Config, Network};
