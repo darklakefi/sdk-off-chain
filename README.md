@@ -14,7 +14,7 @@ This project is part of a wider integration project composed by:
 
 ### Installation
 
-Stable releases of the **sdk-off-chain** codebase are published to **crates.io** under the package name [sdk-off-chain](https://crates.io/crates/darklake-sdk-off-chain), and can be easily installed with cargo.
+Stable releases of the **sdk-off-chain** codebase are published to **crates.io** under the package name [darklake-sdk-off-chain](https://crates.io/crates/darklake-sdk-off-chain), and can be easily installed with cargo.
 
 For general usage, the following steps should be sufficient to get the latest stable version using the [Package Installer for Rust](https://github.com/rust-lang/cargo):
 
