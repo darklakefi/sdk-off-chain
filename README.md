@@ -1,6 +1,6 @@
 # sdk-off-chain
 
-[![GitHub License](https://img.shields.io/github/license/darklakefi/sdk-off-chain)](https://github.com/darklakefi/sdk-off-chain/blob/develop/LICENSE)
+[![Rust](https://img.shields.io/badge/Rust-1.89.0-orange?logo=rust&logoColor=white)](https://www.rust-lang.org/) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE) [![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-yellow.svg)](https://conventionalcommits.org)
 
 The **Darklake SDK for off-chain integrations** is a library that provides a set of tools for off-chain integrations.
 
