@@ -8,7 +8,7 @@ use bincode::{deserialize, serialize};
 use eyre::Result;
 use solana_sdk::{signature::Keypair, transaction::Transaction};
 
-use sdk_off_chain::{self as sdk, TradeStatus};
+use darklake_sdk_off_chain::{self as sdk, TradeStatus};
 use tokio::sync::mpsc;
 use tracing::*;
 use tracing_subscriber;

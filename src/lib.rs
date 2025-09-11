@@ -21,7 +21,7 @@
 //!   A very simple starter example, which just outputs a quote:
 //!   ```rust
 //!   use eyre::Result;
-//!   use sdk_off_chain as sdk;
+//!   use darklake_sdk_off_chain as sdk;
 //!   use tracing::*;
 //!   use tracing_subscriber;
 

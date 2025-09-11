@@ -36,7 +36,7 @@ use crate::{
 ///
 /// This enum represents the different errors that can occur when interacting with the gRPC client.
 #[derive(Debug)]
-pub enum GrpcClientError {
+pub(crate) enum GrpcClientError {
     InvalidUri(String),
     ConnectionFailed(String),
     GrpcError(tonic::Status),
@@ -64,7 +64,7 @@ impl From<tonic::Status> for GrpcClientError {
 }
 
 /// gRPC client for interacting with the Darklake Integrations service
-pub struct DarklakeIntegrationsClient {
+pub(crate) struct DarklakeIntegrationsClient {
     client: DarklakeIntegrationsServiceClient<Channel>,
 }
 
@@ -78,7 +78,7 @@ impl DarklakeIntegrationsClient {
     /// # Returns
     ///
     /// Returns the `DarklakeIntegrationsClient` instance.
-    pub async fn new(server_addr: String) -> Result<Self, GrpcClientError> {
+    pub(crate) async fn new(server_addr: String) -> Result<Self, GrpcClientError> {
         let channel = Channel::from_shared(server_addr)
             .map_err(|e| GrpcClientError::InvalidUri(e.to_string()))?
             .timeout(Duration::from_secs(30))
@@ -102,7 +102,7 @@ impl DarklakeIntegrationsClient {
     /// # Returns
     ///
     /// Returns the `ProtoQuoteResponse` instance.
-    pub async fn get_quote(
+    async fn get_quote(
         &mut self,
         request: ProtoQuoteRequest,
     ) -> Result<ProtoQuoteResponse, GrpcClientError> {
