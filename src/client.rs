@@ -11,8 +11,8 @@ use crate::{
     models::{
         CheckTradeStatusRequest, CheckTradeStatusResponse, CreateUnsignedTransactionRequest,
         CreateUnsignedTransactionResponse, GetTradesListByUserRequest, GetTradesListByUserResponse,
-        QuoteRequest, QuoteResponse, SendSignedTransactionRequest, SendSignedTransactionResponse,
-        TradeStatus,
+        QuoteRequest, QuoteResponse, SendSignedTransactionAndCheckStatusRequest,
+        SendSignedTransactionRequest, SendSignedTransactionResponse, TradeStatus,
     },
 };
 use eyre::Result;
@@ -192,5 +192,62 @@ impl Client {
         request: GetTradesListByUserRequest,
     ) -> Result<GetTradesListByUserResponse> {
         self.service.get_trades_list_by_user(request).await
+    }
+
+    pub async fn send_signed_transaction_and_check_status(
+        &mut self,
+        request: SendSignedTransactionAndCheckStatusRequest,
+    ) -> Result<CheckTradeStatusResponse> {
+        let signed_response = self
+            .service
+            .send_signed_transaction(request.clone().into())
+            .await?;
+        if request
+            .tx_response
+            .send(signed_response.clone())
+            .await
+            .is_err()
+        {
+            return Err(eyre::eyre!(
+                "Signed transaction response receiver channel closed"
+            ));
+        }
+        let mut attempts = 0;
+        let interval = request.interval_millis.unwrap_or(500);
+        let interval_check = Duration::from_millis(interval);
+        loop {
+            let tx = request.tx_status.clone();
+            let response = self
+                .service
+                .check_trade_status(request.clone().into())
+                .await?;
+            if tx.is_some() {
+                if tx.unwrap().send(response.status.clone()).await.is_err() {
+                    return Err(eyre::eyre!("Trade status receiver channel closed"));
+                }
+            }
+            match response.status {
+                TradeStatus::Confirmed => {}
+                TradeStatus::Settled => {
+                    return Ok(response);
+                }
+                TradeStatus::Failed => {
+                    return Ok(response);
+                }
+                TradeStatus::Cancelled => {
+                    return Ok(response);
+                }
+                TradeStatus::Unsigned => {}
+                TradeStatus::Signed => {}
+                TradeStatus::Slashed => {
+                    return Ok(response);
+                }
+            }
+            if request.max_attempts.is_some() && attempts >= request.max_attempts.unwrap() {
+                return Err(eyre::eyre!("Max attempts reached"));
+            }
+            attempts += 1;
+            tokio::time::sleep(interval_check).await;
+        }
     }
 }

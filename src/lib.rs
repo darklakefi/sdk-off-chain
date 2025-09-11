@@ -64,6 +64,6 @@ pub use core::config::{Config, Network};
 pub use models::{
     CheckTradeStatusRequest, CheckTradeStatusResponse, CreateUnsignedTransactionRequest,
     CreateUnsignedTransactionResponse, GetTradesListByUserRequest, GetTradesListByUserResponse,
-    QuoteRequest, QuoteResponse, SendSignedTransactionRequest, SendSignedTransactionResponse,
-    TradeStatus,
+    QuoteRequest, QuoteResponse, SendSignedTransactionAndCheckStatusRequest,
+    SendSignedTransactionRequest, SendSignedTransactionResponse, TradeStatus,
 };

@@ -28,8 +28,8 @@ pub struct CheckTradeStatusRequest {
 }
 
 impl CheckTradeStatusRequest {
-    pub fn builder() -> CheckTradeStatusRequestBuilder {
-        CheckTradeStatusRequestBuilder::new()
+    pub fn builder(trade_id: &str) -> CheckTradeStatusRequestBuilder {
+        CheckTradeStatusRequestBuilder::new(trade_id)
     }
 }
 
@@ -45,20 +45,15 @@ pub struct CheckTradeStatusRequestBuilder {
 }
 
 impl CheckTradeStatusRequestBuilder {
-    pub fn new() -> Self {
+    pub fn new(trade_id: &str) -> Self {
         Self {
             tracking_id: None,
-            trade_id: String::new(),
+            trade_id: trade_id.to_string(),
         }
     }
 
     pub fn tracking_id(mut self, tracking_id: &str) -> Self {
         self.tracking_id = Some(tracking_id.to_string());
-        self
-    }
-
-    pub fn trade_id(mut self, trade_id: &str) -> Self {
-        self.trade_id = trade_id.to_string();
         self
     }
 

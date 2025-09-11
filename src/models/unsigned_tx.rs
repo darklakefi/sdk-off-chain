@@ -33,8 +33,20 @@ pub struct CreateUnsignedTransactionRequest {
 }
 
 impl CreateUnsignedTransactionRequest {
-    pub fn builder() -> CreateUnsignedTransactionRequestBuilder {
-        CreateUnsignedTransactionRequestBuilder::new()
+    pub fn builder(
+        user_address: &str,
+        token_mint_x: &str,
+        token_mint_y: &str,
+        amount_in: u64,
+        min_out: u64,
+    ) -> CreateUnsignedTransactionRequestBuilder {
+        CreateUnsignedTransactionRequestBuilder::new(
+            user_address,
+            token_mint_x,
+            token_mint_y,
+            amount_in,
+            min_out,
+        )
     }
 }
 
@@ -100,41 +112,22 @@ pub struct CreateUnsignedTransactionRequestBuilder {
 }
 
 impl CreateUnsignedTransactionRequestBuilder {
-    pub fn new() -> Self {
+    pub fn new(
+        user_address: &str,
+        token_mint_x: &str,
+        token_mint_y: &str,
+        amount_in: u64,
+        min_out: u64,
+    ) -> Self {
         Self {
-            user_address: String::new(),
-            token_mint_x: String::new(),
-            token_mint_y: String::new(),
-            amount_in: 0,
-            min_out: 0,
+            user_address: user_address.to_string(),
+            token_mint_x: token_mint_x.to_string(),
+            token_mint_y: token_mint_y.to_string(),
+            amount_in: amount_in,
+            min_out: min_out,
             tracking_id: None,
             is_swap_x_to_y: None,
         }
-    }
-
-    pub fn user_address(mut self, user_address: &str) -> Self {
-        self.user_address = user_address.to_string();
-        self
-    }
-
-    pub fn token_mint_x(mut self, token_mint_x: &str) -> Self {
-        self.token_mint_x = token_mint_x.to_string();
-        self
-    }
-
-    pub fn token_mint_y(mut self, token_mint_y: &str) -> Self {
-        self.token_mint_y = token_mint_y.to_string();
-        self
-    }
-
-    pub fn amount_in(mut self, amount_in: u64) -> Self {
-        self.amount_in = amount_in;
-        self
-    }
-
-    pub fn min_out(mut self, min_out: u64) -> Self {
-        self.min_out = min_out;
-        self
     }
 
     pub fn tracking_id(mut self, tracking_id: &str) -> Self {

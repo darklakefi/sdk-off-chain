@@ -8,7 +8,10 @@ use bincode::{deserialize, serialize};
 use eyre::Result;
 use solana_sdk::{signature::Keypair, transaction::Transaction};
 
-use sdk_off_chain::{self as sdk, TradeStatus};
+use sdk_off_chain::{
+    self as sdk, SendSignedTransactionAndCheckStatusRequest, SendSignedTransactionResponse,
+    TradeStatus,
+};
 use tokio::sync::mpsc;
 use tracing::*;
 use tracing_subscriber;
@@ -20,7 +23,7 @@ use std::io::ErrorKind;
 
 /// Show how to run a swap transaction using Darklake DEX.
 ///
-/// This example shows how to run a swap transaction using Darklake DEX.
+/// This example shows how to run a swap transaction using Darklake DEX. Instead of having two calls, one for sending the signed transaction and one for checking the status, this example shows how to do both in one call.
 #[tokio::main]
 async fn main() -> Result<()> {
     tracing_subscriber::fmt::init();
@@ -60,32 +63,42 @@ async fn main() -> Result<()> {
         get_base64_signed_transaction(&response.unsigned_transaction, &keypair).await?;
     // then the signed transaction should be sent to the Darklake DEX for the execution.
 
-    let request = sdk::SendSignedTransactionRequest::builder(&signed_tx_base64, &trade_id).build();
+    let (tx_signed, mut rx_signed) = mpsc::channel::<SendSignedTransactionResponse>(10);
+    let (tx_status, mut rx_status) = mpsc::channel::<TradeStatus>(10);
 
-    let response = client.send_signed_transaction(request).await?;
+    let request = SendSignedTransactionAndCheckStatusRequest::builder(
+        &signed_tx_base64,
+        &trade_id,
+        tx_signed,
+    )
+    .tx_status(tx_status)
+    .build();
 
-    info!("Signed transaction response: {:?}", response);
-
-    let (tx, mut rx) = mpsc::channel::<TradeStatus>(10);
     let listener = tokio::spawn(async move {
         info!("Listening for trade status updates...");
-        while let Some(status_update) = rx.recv().await {
+        while let Some(status_update) = rx_status.recv().await {
             info!("Received status update: {:?}", status_update);
         }
     });
 
+    let listener_signed = tokio::spawn(async move {
+        info!("Listening for signed transaction response...");
+        while let Some(signed_response) = rx_signed.recv().await {
+            info!(
+                "Received signed transaction response: {:?}",
+                signed_response
+            );
+        }
+    });
+
     let trade_result = client
-        .check_trade_status_loop(
-            sdk::CheckTradeStatusRequest::builder(&trade_id).build(),
-            Some(tx),
-            None,
-            None,
-        )
+        .send_signed_transaction_and_check_status(request)
         .await?;
+
     info!("Trade result: {:?}", trade_result);
 
     listener.await?;
-
+    listener_signed.await?;
     Ok(())
 }
 
