@@ -21,7 +21,7 @@
 //!   A very simple starter example, which just outputs a quote:
 //!   ```rust
 //!   use eyre::Result;
-//!   use sdk_off_chain as sdk;
+//!   use darklake_sdk_off_chain as sdk;
 //!   use tracing::*;
 //!   use tracing_subscriber;
 
@@ -51,19 +51,19 @@
 //!   Ok(())
 //!   }
 //!   ```
-pub mod integrations_pb {
+mod integrations_pb {
     tonic::include_proto!("darklake.v1");
 }
 
-pub mod client;
-pub mod core;
-pub mod models;
+mod client;
+mod core;
+mod models;
 
 pub use client::Client;
 pub use core::config::{Config, Network};
 pub use models::{
     CheckTradeStatusRequest, CheckTradeStatusResponse, CreateUnsignedTransactionRequest,
     CreateUnsignedTransactionResponse, GetTradesListByUserRequest, GetTradesListByUserResponse,
-    QuoteRequest, QuoteResponse, SendSignedTransactionRequest, SendSignedTransactionResponse,
-    TradeStatus,
+    QuoteRequest, QuoteResponse, SendSignedTransactionAndCheckStatusRequest,
+    SendSignedTransactionRequest, SendSignedTransactionResponse, TradeStatus,
 };

@@ -17,7 +17,7 @@ use crate::models::{
 /// Service trait
 ///
 /// This trait is used to define the methods that must be implemented by the service.
-pub trait Service {
+pub(crate) trait Service {
     async fn quote(&mut self, request: QuoteRequest) -> Result<QuoteResponse>;
     async fn create_unsigned_transaction(
         &mut self,
