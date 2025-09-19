@@ -1,0 +1,43 @@
+name: Check Version Change
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  check-version:
+    if: github.base_ref != 'main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout base branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.base_ref }}
+
+      - name: Get base version
+        id: base_version
+        run: |
+          VERSION=$(yq -r '.package.version' Cargo.toml)
+          echo "BASE_VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Checkout head branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Get head version
+        id: head_version
+        run: |
+          VERSION=$(yq -r '.package.version' Cargo.toml)
+          echo "HEAD_VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Compare versions
+        if: ${{ env.BASE_VERSION == env.HEAD_VERSION }}
+        run: |
+          echo "The version in Cargo.toml has not been updated."
+          exit 1 # Fails the workflow if versions are the same

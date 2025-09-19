@@ -51,6 +51,8 @@
 //!   Ok(())
 //!   }
 //!   ```
+//!
+//! For more examples, please see the [examples](https://github.com/darklakefi/sdk-off-chain/tree/develop/examples) directory.
 mod integrations_pb {
     tonic::include_proto!("darklake.v1");
 }
