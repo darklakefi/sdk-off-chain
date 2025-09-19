@@ -4,19 +4,17 @@
 // license that can be found in the LICENSE file or at
 // https://opensource.org/licenses/MIT.
 
-use bincode::{deserialize, serialize};
+mod common;
+
 use eyre::Result;
-use solana_sdk::{signature::Keypair, transaction::Transaction};
+use solana_sdk::signature::Keypair;
 
 use darklake_sdk_off_chain::{self as sdk, TradeStatus};
 use tokio::sync::mpsc;
 use tracing::*;
 use tracing_subscriber;
 
-use base64::prelude::*;
-use solana_client::nonblocking::rpc_client::RpcClient;
-use solana_sdk::hash::Hash;
-use std::io::ErrorKind;
+use crate::common::common::create_base64_signed_transaction;
 
 /// Show how to run a swap transaction using Darklake DEX.
 ///
@@ -35,12 +33,12 @@ async fn main() -> Result<()> {
 
     // Generate keypair from wallet secrets, This secret key is for demo purposes only.
     let secret: [u8; 32] = [
-        73, 119, 63, 0, 7, 178, 225, 187, 108, 179, 236, 246, 77, 91, 48, 8, 92, 241, 232, 101,
-        215, 54, 149, 16, 178, 166, 236, 71, 237, 30, 204, 226,
+        73, 119, 63, 0, 6, 178, 225, 187, 108, 176, 236, 246, 77, 91, 48, 8, 92, 241, 232, 101,
+        215, 54, 149, 16, 172, 166, 236, 71, 237, 32, 204, 226,
     ];
     let keypair = Keypair::new_from_array(secret);
     // Wallet address for demo purposes only.
-    let wallet_address = "4bRZeVcTPFTFwdL8hgbEX3gdzQ37v2vr2GSmvR7X4Bsp".to_string();
+    let wallet_address = "4bRZeVcTPPTFwcL8hgbEX3gdzQ37v2vr2GSmvR7X4Arp".to_string();
 
     let request = sdk::CreateUnsignedTransactionRequest::builder(
         &wallet_address,
@@ -57,7 +55,7 @@ async fn main() -> Result<()> {
     // response.unsigned_transaction should be sent to the wallet for the signing.
     // This code simulates the signed process
     let signed_tx_base64 =
-        get_base64_signed_transaction(&response.unsigned_transaction, &keypair).await?;
+        create_base64_signed_transaction(&response.unsigned_transaction, &keypair).await?;
     // then the signed transaction should be sent to the Darklake DEX for the execution.
 
     let request = sdk::SendSignedTransactionRequest::builder(&signed_tx_base64, &trade_id).build();
@@ -87,56 +85,4 @@ async fn main() -> Result<()> {
     listener.await?;
 
     Ok(())
-}
-
-async fn get_recent_blockhash() -> Result<Hash> {
-    let rpc_client = RpcClient::new("https://api.devnet.solana.com".to_string());
-    let recent_blockhash: Hash = rpc_client.get_latest_blockhash().await?;
-    Ok(recent_blockhash)
-}
-
-async fn get_base64_signed_transaction(
-    unsigned_transaction: &str,
-    keypair: &Keypair,
-) -> Result<String> {
-    let transaction = deserialize_transaction(&unsigned_transaction)?;
-    info!("Deserialized transaction: {:?}", transaction);
-    let recent_blockhash: Hash = get_recent_blockhash().await?;
-    let signed_tx = sign_transaction(transaction, &[&keypair], recent_blockhash)?;
-    info!("Signed transaction: {:?}", signed_tx);
-    let signed_tx_base64 = encode_transaction_to_base64(&signed_tx)?;
-    Ok(signed_tx_base64)
-}
-
-fn deserialize_transaction(base64_str: &str) -> Result<Transaction> {
-    // Decode the Base64 string into a byte vector.
-    let decoded_bytes = BASE64_STANDARD
-        .decode(base64_str)
-        .map_err(|e| std::io::Error::new(ErrorKind::InvalidData, e))?;
-
-    // Use `bincode::deserialize` directly on the byte slice.
-    let transaction = deserialize(&decoded_bytes)
-        .map_err(|e| std::io::Error::new(ErrorKind::InvalidData, e.to_string()))?;
-
-    Ok(transaction)
-}
-
-fn sign_transaction(
-    mut transaction: Transaction,
-    signers: &[&Keypair],
-    recent_blockhash: Hash,
-) -> Result<Transaction> {
-    transaction.sign(signers, recent_blockhash);
-    Ok(transaction)
-}
-
-fn encode_transaction_to_base64(transaction: &Transaction) -> Result<String> {
-    // Use `bincode::serialize` to convert the transaction to a byte vector.
-    let encoded_bytes = serialize(transaction)
-        .map_err(|e| std::io::Error::new(ErrorKind::InvalidData, e.to_string()))?;
-
-    // Encode the byte vector to a Base64 string.
-    let base64_string = BASE64_STANDARD.encode(&encoded_bytes);
-
-    Ok(base64_string)
 }
