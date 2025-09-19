@@ -64,8 +64,10 @@ mod models;
 pub use client::Client;
 pub use core::config::{Config, Network};
 pub use models::{
-    CheckTradeStatusRequest, CheckTradeStatusResponse, CreateUnsignedTransactionRequest,
-    CreateUnsignedTransactionResponse, GetTradesListByUserRequest, GetTradesListByUserResponse,
-    QuoteRequest, QuoteResponse, SendSignedTransactionAndCheckStatusRequest,
-    SendSignedTransactionRequest, SendSignedTransactionResponse, TradeStatus,
+    AddLiquidityRequest, AddLiquidityResponse, CheckTradeStatusRequest, CheckTradeStatusResponse,
+    CreateUnsignedTransactionRequest, CreateUnsignedTransactionResponse,
+    GetTradesListByUserRequest, GetTradesListByUserResponse, InitPoolRequest, InitPoolResponse,
+    QuoteRequest, QuoteResponse, RemoveLiquidityRequest, RemoveLiquidityResponse,
+    SendSignedTransactionAndCheckStatusRequest, SendSignedTransactionRequest,
+    SendSignedTransactionResponse, TradeStatus,
 };

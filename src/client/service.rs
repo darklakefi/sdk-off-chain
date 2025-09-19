@@ -8,9 +8,11 @@ use async_trait::async_trait;
 use eyre::Result;
 
 use crate::models::{
-    CheckTradeStatusRequest, CheckTradeStatusResponse, CreateUnsignedTransactionRequest,
-    CreateUnsignedTransactionResponse, GetTradesListByUserRequest, GetTradesListByUserResponse,
-    QuoteRequest, QuoteResponse, SendSignedTransactionRequest, SendSignedTransactionResponse,
+    AddLiquidityRequest, AddLiquidityResponse, CheckTradeStatusRequest, CheckTradeStatusResponse,
+    CreateUnsignedTransactionRequest, CreateUnsignedTransactionResponse,
+    GetTradesListByUserRequest, GetTradesListByUserResponse, InitPoolRequest, InitPoolResponse,
+    QuoteRequest, QuoteResponse, RemoveLiquidityRequest, RemoveLiquidityResponse,
+    SendSignedTransactionRequest, SendSignedTransactionResponse,
 };
 
 #[async_trait]
@@ -35,4 +37,11 @@ pub(crate) trait Service {
         &mut self,
         request: GetTradesListByUserRequest,
     ) -> Result<GetTradesListByUserResponse>;
+    async fn init_pool(&mut self, request: InitPoolRequest) -> Result<InitPoolResponse>;
+    async fn add_liquidity(&mut self, request: AddLiquidityRequest)
+    -> Result<AddLiquidityResponse>;
+    async fn remove_liquidity(
+        &mut self,
+        request: RemoveLiquidityRequest,
+    ) -> Result<RemoveLiquidityResponse>;
 }

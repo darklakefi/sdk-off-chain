@@ -9,9 +9,11 @@ use std::time::Duration;
 use crate::{
     core::config::Config,
     models::{
-        CheckTradeStatusRequest, CheckTradeStatusResponse, CreateUnsignedTransactionRequest,
+        AddLiquidityRequest, AddLiquidityResponse, CheckTradeStatusRequest,
+        CheckTradeStatusResponse, CreateUnsignedTransactionRequest,
         CreateUnsignedTransactionResponse, GetTradesListByUserRequest, GetTradesListByUserResponse,
-        QuoteRequest, QuoteResponse, SendSignedTransactionAndCheckStatusRequest,
+        InitPoolRequest, InitPoolResponse, QuoteRequest, QuoteResponse, RemoveLiquidityRequest,
+        RemoveLiquidityResponse, SendSignedTransactionAndCheckStatusRequest,
         SendSignedTransactionRequest, SendSignedTransactionResponse, TradeStatus,
     },
 };
@@ -249,5 +251,56 @@ impl Client {
             attempts += 1;
             tokio::time::sleep(interval_check).await;
         }
+    }
+
+    /// Init pool
+    ///
+    /// This is used to init a pool.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the pool cannot be initialized.
+    ///     
+    /// # Returns
+    ///
+    /// Returns the `InitPoolResponse` instance with the unsigned transaction to send to the wallet for sign & execute.
+    pub async fn init_pool(&mut self, request: InitPoolRequest) -> Result<InitPoolResponse> {
+        self.service.init_pool(request).await
+    }
+
+    /// Add liquidity
+    ///
+    /// This is used to add liquidity to a pool.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the liquidity cannot be added.
+    ///
+    /// # Returns
+    ///
+    /// Returns the `AddLiquidityResponse` instance with the unsigned transaction to send to the wallet for sign & execute.
+    pub async fn add_liquidity(
+        &mut self,
+        request: AddLiquidityRequest,
+    ) -> Result<AddLiquidityResponse> {
+        self.service.add_liquidity(request).await
+    }
+
+    /// Remove liquidity
+    ///
+    /// This is used to remove liquidity from a pool.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the liquidity cannot be removed.
+    ///
+    /// # Returns
+    ///
+    /// Returns the `RemoveLiquidityResponse` instance with the unsigned transaction to send to the wallet for sign & execute.
+    pub async fn remove_liquidity(
+        &mut self,
+        request: RemoveLiquidityRequest,
+    ) -> Result<RemoveLiquidityResponse> {
+        self.service.remove_liquidity(request).await
     }
 }
