@@ -1,6 +1,7 @@
 name: Check Version Change
 
 on:
+  workflow_dispatch:
   pull_request:
     types: [opened, synchronize, reopened]
     branches:
