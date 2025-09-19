@@ -14,21 +14,28 @@ use eyre::Result;
 use crate::{
     client::service::Service,
     integrations_pb::{
+        AddLiquidityRequest as ProtoAddLiquidityRequest,
+        AddLiquidityResponse as ProtoAddLiquidityResponse,
         CheckTradeStatusRequest as ProtoCheckTradeStatusRequest,
         CheckTradeStatusResponse as ProtoCheckTradeStatusResponse,
         CreateUnsignedTransactionRequest as ProtoCreateUnsignedTransactionRequest,
         CreateUnsignedTransactionResponse as ProtoCreateUnsignedTransactionResponse,
         GetTradesListByUserRequest as ProtoGetTradesListByUserRequest,
         GetTradesListByUserResponse as ProtoGetTradesListByUserResponse,
+        InitPoolRequest as ProtoInitPoolRequest, InitPoolResponse as ProtoInitPoolResponse,
         QuoteRequest as ProtoQuoteRequest, QuoteResponse as ProtoQuoteResponse,
+        RemoveLiquidityRequest as ProtoRemoveLiquidityRequest,
+        RemoveLiquidityResponse as ProtoRemoveLiquidityResponse,
         SendSignedTransactionRequest as ProtoSendSignedTransactionRequest,
         SendSignedTransactionResponse as ProtoSendSignedTransactionResponse,
         darklake_integrations_service_client::DarklakeIntegrationsServiceClient,
     },
     models::{
-        CheckTradeStatusRequest, CheckTradeStatusResponse, CreateUnsignedTransactionRequest,
+        AddLiquidityRequest, AddLiquidityResponse, CheckTradeStatusRequest,
+        CheckTradeStatusResponse, CreateUnsignedTransactionRequest,
         CreateUnsignedTransactionResponse, GetTradesListByUserRequest, GetTradesListByUserResponse,
-        QuoteRequest, QuoteResponse, SendSignedTransactionRequest, SendSignedTransactionResponse,
+        InitPoolRequest, InitPoolResponse, QuoteRequest, QuoteResponse, RemoveLiquidityRequest,
+        RemoveLiquidityResponse, SendSignedTransactionRequest, SendSignedTransactionResponse,
     },
 };
 
@@ -203,6 +210,66 @@ impl DarklakeIntegrationsClient {
             .await?;
         Ok(response.into_inner())
     }
+
+    /// Init pool
+    ///
+    /// This is used to init a pool.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the pool cannot be initialized.
+    ///
+    /// # Returns
+    ///
+    /// Returns the `ProtoInitPoolResponse` instance with the unsigned transaction to send to the wallet for sign & execute.
+    async fn init_pool(
+        &mut self,
+        request: ProtoInitPoolRequest,
+    ) -> Result<ProtoInitPoolResponse, GrpcClientError> {
+        debug!("Init pool for request: {:?}", request);
+        let response = self.client.init_pool(Request::new(request)).await?;
+        Ok(response.into_inner())
+    }
+
+    /// Add liquidity
+    ///
+    /// This is used to add liquidity to a pool.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the liquidity cannot be added.
+    ///
+    /// # Returns
+    ///
+    /// Returns the `ProtoAddLiquidityResponse` instance with the unsigned transaction to send to the wallet for sign & execute.
+    async fn add_liquidity(
+        &mut self,
+        request: ProtoAddLiquidityRequest,
+    ) -> Result<ProtoAddLiquidityResponse, GrpcClientError> {
+        info!("Adding liquidity for request: {:?}", request);
+        let response = self.client.add_liquidity(Request::new(request)).await?;
+        Ok(response.into_inner())
+    }
+
+    /// Remove liquidity
+    ///
+    /// This is used to remove liquidity from a pool.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the liquidity cannot be removed.    
+    ///
+    /// # Returns
+    ///
+    /// Returns the `ProtoRemoveLiquidityResponse` instance with the unsigned transaction to send to the wallet for sign & execute.
+    async fn remove_liquidity(
+        &mut self,
+        request: ProtoRemoveLiquidityRequest,
+    ) -> Result<ProtoRemoveLiquidityResponse, GrpcClientError> {
+        debug!("Removing liquidity for request: {:?}", request);
+        let response = self.client.remove_liquidity(Request::new(request)).await?;
+        Ok(response.into_inner())
+    }
 }
 
 #[async_trait]
@@ -223,6 +290,17 @@ impl Service for DarklakeIntegrationsClient {
         Ok(proto_response.into())
     }
 
+    /// Create unsigned transaction
+    ///
+    /// This is used to create an unsigned transaction for the Darklake Integrations service.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the unsigned transaction cannot be created.
+    ///
+    /// # Returns
+    ///
+    /// Returns the `CreateUnsignedTransactionResponse` instance.
     async fn create_unsigned_transaction(
         &mut self,
         request: CreateUnsignedTransactionRequest,
@@ -231,6 +309,17 @@ impl Service for DarklakeIntegrationsClient {
         Ok(proto_response.into())
     }
 
+    /// Send signed transaction
+    ///
+    /// This is used to send a signed transaction to the Darklake Integrations service.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the signed transaction cannot be sent.
+    ///
+    /// # Returns
+    ///
+    /// Returns the `SendSignedTransactionResponse` instance.
     async fn send_signed_transaction(
         &mut self,
         request: SendSignedTransactionRequest,
@@ -239,6 +328,17 @@ impl Service for DarklakeIntegrationsClient {
         Ok(proto_response.into())
     }
 
+    /// Check trade status
+    ///
+    /// This is used to check the status of a trade.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the trade status cannot be checked.
+    ///
+    /// # Returns
+    ///
+    /// Returns the `CheckTradeStatusResponse` instance.
     async fn check_trade_status(
         &mut self,
         request: CheckTradeStatusRequest,
@@ -247,11 +347,76 @@ impl Service for DarklakeIntegrationsClient {
         Ok(proto_response.into())
     }
 
+    /// Get trades list by user
+    ///
+    /// This is used to get the trades list by user.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the trades list cannot be retrieved.
+    ///
+    /// # Returns
+    ///
+    /// Returns the `GetTradesListByUserResponse` instance.
     async fn get_trades_list_by_user(
         &mut self,
         request: GetTradesListByUserRequest,
     ) -> Result<GetTradesListByUserResponse> {
         let proto_response = self.get_trades_list_by_user(request.into()).await?;
+        Ok(proto_response.into())
+    }
+
+    /// Init pool
+    ///
+    /// This is used to init a pool.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the pool cannot be initialized.
+    ///
+    /// # Returns
+    ///
+    /// Returns the `InitPoolResponse` instance.
+    async fn init_pool(&mut self, request: InitPoolRequest) -> Result<InitPoolResponse> {
+        let proto_response = self.init_pool(request.into()).await?;
+        Ok(proto_response.into())
+    }
+
+    /// Add liquidity
+    ///
+    /// This is used to add liquidity to a pool.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the liquidity cannot be added.
+    ///
+    /// # Returns
+    ///
+    /// Returns the `AddLiquidityResponse` instance.
+    async fn add_liquidity(
+        &mut self,
+        request: AddLiquidityRequest,
+    ) -> Result<AddLiquidityResponse> {
+        let proto_response = self.add_liquidity(request.into()).await?;
+        Ok(proto_response.into())
+    }
+
+    /// Remove liquidity
+    ///
+    /// This is used to remove liquidity from a pool.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the liquidity cannot be removed.
+    ///
+    /// # Returns
+    ///
+    /// Returns the `RemoveLiquidityResponse` instance.
+    async fn remove_liquidity(
+        &mut self,
+        request: RemoveLiquidityRequest,
+    ) -> Result<RemoveLiquidityResponse> {
+        let proto_response = self.remove_liquidity(request.into()).await?;
         Ok(proto_response.into())
     }
 }
