@@ -1,0 +1,98 @@
+name: Automated Changelog Update
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  update_changelog_in_main:
+    if: github.actor != 'github-actions[bot]' && github.actor != 'darklake-bot'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get current version from Cargo.toml
+        id: get_version
+        run: |
+          CURRENT_VERSION=$(yq -r '.package.version' Cargo.toml)
+          echo "CURRENT_VERSION=${CURRENT_VERSION}" >> $GITHUB_ENV
+
+      - name: Generate changelog
+        uses: orhun/git-cliff-action@v4
+        id: git-cliff
+        with:
+          config: cliff.toml
+          args: -v --sort newest --github-token ${{ secrets.GITHUB_TOKEN }} --tag ${{ env.CURRENT_VERSION }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OUTPUT: CHANGELOG.md
+
+      - name: Create Pull Request
+        id: create_pr
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore: Update changelog in main for v${{ env.CURRENT_VERSION }}"
+          title: "chore: Update changelog for v${{ env.CURRENT_VERSION }}"
+          body: "This PR was automatically created to update the CHANGELOG.md file."
+          branch: chore/update-changelog-main
+          branch-suffix: timestamp
+          base: main
+
+      - name: Auto-approve and merge PR
+        run: |
+          gh pr merge ${{ steps.create_pr.outputs.pull-request-number }} --admin --squash --delete-branch -R ${{ github.repository }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.DARKLAKE_BOT_PAT }}
+
+  update_changelog_in_develop:
+    if: github.actor != 'github-actions[bot]' && github.actor != 'darklake-bot'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get current version from Cargo.toml
+        id: get_version
+        run: |
+          CURRENT_VERSION=$(yq -r '.package.version' Cargo.toml)
+          echo "CURRENT_VERSION=${CURRENT_VERSION}" >> $GITHUB_ENV
+
+      - name: Generate changelog
+        uses: orhun/git-cliff-action@v4
+        id: git-cliff
+        with:
+          config: cliff.toml
+          args: -v --sort newest --github-token ${{ secrets.GITHUB_TOKEN }} --tag ${{ env.CURRENT_VERSION }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OUTPUT: CHANGELOG.md
+
+      - name: Create Pull Request
+        id: create_pr
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore: Update changelog in develop for v${{ env.CURRENT_VERSION }}"
+          title: "chore: Update changelog for v${{ env.CURRENT_VERSION }}"
+          body: "This PR was automatically created to update the CHANGELOG.md file."
+          branch: chore/update-changelog-develop
+          branch-suffix: timestamp
+          base: develop
+
+      - name: Auto-approve and merge PR
+        run: |
+          gh pr merge ${{ steps.create_pr.outputs.pull-request-number }} --admin --squash --delete-branch -R ${{ github.repository }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.DARKLAKE_BOT_PAT }}
