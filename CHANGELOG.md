@@ -1,8 +1,15 @@
-## [0.2.1] - 2025-09-22
+## [0.2.2] - 2025-09-22
 
 ### 🐛 Bug Fixes
 
+- Fix a TLS issue
 - Fix crates.io pipeline
+
+### ⚙️ Miscellaneous Tasks
+
+- Increase version
+- Update changelog in develop for v0.2.1 (#18)
+- Update changelog in main for v0.2.1 (#17)
 ## [0.2.1] - 2025-09-22
 
 ### 🐛 Bug Fixes
