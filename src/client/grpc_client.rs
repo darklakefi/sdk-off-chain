@@ -6,7 +6,10 @@
 
 use std::fmt;
 use std::time::Duration;
-use tonic::{Request, async_trait, transport::Channel};
+use tonic::{
+    Request, async_trait,
+    transport::{Channel, ClientTlsConfig},
+};
 use tracing::*;
 
 use eyre::Result;
@@ -86,9 +89,24 @@ impl DarklakeIntegrationsClient {
     ///
     /// Returns the `DarklakeIntegrationsClient` instance.
     pub(crate) async fn new(server_addr: String) -> Result<Self, GrpcClientError> {
-        let channel = Channel::from_shared(server_addr)
-            .map_err(|e| GrpcClientError::InvalidUri(e.to_string()))?
-            .timeout(Duration::from_secs(30))
+        let uri = server_addr
+            .parse::<tonic::transport::Uri>()
+            .map_err(|e| GrpcClientError::InvalidUri(e.to_string()))?;
+
+        let mut endpoint = Channel::builder(uri.clone()).timeout(Duration::from_secs(30));
+
+        if uri.scheme_str() == Some("https") {
+            let tls = ClientTlsConfig::new()
+                .domain_name(uri.host().unwrap_or_default())
+                .assume_http2(true)
+                .with_webpki_roots();
+
+            endpoint = endpoint
+                .tls_config(tls)
+                .map_err(|e| GrpcClientError::ConnectionFailed(e.to_string()))?;
+        }
+
+        let channel = endpoint
             .connect()
             .await
             .map_err(|e| GrpcClientError::ConnectionFailed(e.to_string()))?;

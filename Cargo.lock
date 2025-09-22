@@ -667,7 +667,7 @@ dependencies = [
 
 [[package]]
 name = "darklake-sdk-off-chain"
-version = "0.2.1"
+version = "0.2.2"
 dependencies = [
  "async-trait",
  "base64 0.22.1",
@@ -2661,6 +2661,7 @@ version = "0.23.31"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c0ebcbd2f03de0fc1122ad9bb24b127a5a6cd51d72604a3f3c50ac459762b6cc"
 dependencies = [
+ "log",
  "once_cell",
  "ring",
  "rustls-pki-types",
@@ -4881,11 +4882,13 @@ dependencies = [
  "socket2",
  "sync_wrapper",
  "tokio",
+ "tokio-rustls 0.26.2",
  "tokio-stream",
  "tower",
  "tower-layer",
  "tower-service",
  "tracing",
+ "webpki-roots 1.0.2",
 ]
 
 [[package]]
