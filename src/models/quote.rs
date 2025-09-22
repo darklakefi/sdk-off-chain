@@ -25,7 +25,9 @@ pub struct QuoteRequest {
 
 /// Quote response
 ///
-/// This struct is used to response a quote from the Darklake Integrations service.
+/// This struct is used to return a quote from the Darklake Integrations service.
+/// The quote returns Darklake controlled fees in the `fee_amount` field and the `fee_pct` field.
+/// All the transfer fees imposed by the token contracts are calculated, but not reported in the above fields.
 #[derive(Debug, Clone)]
 pub struct QuoteResponse {
     /// The mint address of the token X.

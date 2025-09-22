@@ -36,7 +36,7 @@ pub struct AddLiquidityRequest {
 
 /// Add liquidity response
 ///
-/// This struct is used to response to add liquidity from the Darklake Integrations service.
+/// This struct is used to return an unsigned transaction to send to the wallet for the signing and execution.
 #[derive(Debug, Clone)]
 pub struct AddLiquidityResponse {
     /// Base64 encoded unsigned transaction to send to the wallet for sign & execute.
@@ -97,7 +97,7 @@ pub struct RemoveLiquidityRequest {
 
 /// Remove liquidity response
 ///
-/// This struct is used to response to remove liquidity from the Darklake Integrations service.
+/// This struct is used to return an unsigned transaction to send to the wallet for the signing and execution.
 #[derive(Debug, Clone)]
 pub struct RemoveLiquidityResponse {
     /// Base64 encoded unsigned transaction to send to the wallet for sign & execute.

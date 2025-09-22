@@ -31,7 +31,7 @@ pub struct InitPoolRequest {
 
 /// Init pool response
 ///
-/// This struct is used to response a pool initialization from the Darklake Integrations service.
+/// This struct is used to return an unsigned transaction to send to the wallet for the signing and execution.
 #[derive(Debug, Clone)]
 pub struct InitPoolResponse {
     /// Base64 encoded unsigned transaction to send to the wallet for sign & execute.
