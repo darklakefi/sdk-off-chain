@@ -28,6 +28,7 @@ pub mod service;
 /// This enum is used to define the type of client to create.
 #[derive(Debug, Clone)]
 pub enum ClientType {
+    /// Grpc client type. This is the default client type.
     Grpc,
 }
 

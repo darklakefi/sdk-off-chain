@@ -13,9 +13,13 @@ use crate::integrations_pb::{
 /// This struct is used to request a quote from the Darklake Integrations service.
 #[derive(Debug, Clone)]
 pub struct QuoteRequest {
+    /// The mint address of the token X.
     pub token_mint_x: String,
+    /// The mint address of the token Y.
     pub token_mint_y: String,
+    /// The amount of token X to swap.
     pub amount_in: u64,
+    /// Whether to swap token X to token Y.
     pub is_swap_x_to_y: bool,
 }
 
@@ -24,12 +28,19 @@ pub struct QuoteRequest {
 /// This struct is used to response a quote from the Darklake Integrations service.
 #[derive(Debug, Clone)]
 pub struct QuoteResponse {
+    /// The mint address of the token X.
     pub token_mint_x: String,
+    /// The mint address of the token Y.
     pub token_mint_y: String,
+    /// The amount of token X to swap.
     pub amount_in: u64,
+    /// The amount of token Y to receive.
     pub amount_out: u64,
+    /// The fee amount.
     pub fee_amount: u64,
+    /// The fee percentage.
     pub fee_pct: f64,
+    /// Whether to swap token X to token Y.
     pub is_swap_x_to_y: bool,
 }
 

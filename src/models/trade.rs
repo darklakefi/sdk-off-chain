@@ -21,7 +21,7 @@ use crate::models::enums::TradeStatus;
 /// This struct is used to check the status of a trade.
 #[derive(Debug, Clone)]
 pub struct CheckTradeStatusRequest {
-    /// The tracking id for the trade.
+    /// The tracking id for the trade. This id helps in tracing the transaction on the server side, makeing it simple to debug issues.
     pub tracking_id: String,
     /// The trade id.
     pub trade_id: String,
@@ -38,7 +38,7 @@ impl CheckTradeStatusRequest {
 /// This struct is used to build a CheckTradeStatusRequest.
 #[derive(Debug, Clone)]
 pub struct CheckTradeStatusRequestBuilder {
-    /// The tracking id for the trade.
+    /// The tracking id for the trade. This id helps in tracing the transaction on the server side, makeing it simple to debug issues.
     pub tracking_id: Option<String>,
     /// The trade id.
     pub trade_id: String,

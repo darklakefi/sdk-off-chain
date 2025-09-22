@@ -38,6 +38,7 @@ pub struct Config {
     /// The base URL of the gRPC service.
     ///
     /// The final URL will be constructed by prepending the `network` to this URL.
+    /// This URL will be provided by Darklake Labs.
     pub url: Url,
     /// The type of client to create (e.g., gRPC).
     pub client_type: ClientType,

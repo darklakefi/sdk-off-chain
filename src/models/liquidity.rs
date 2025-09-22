@@ -16,13 +16,21 @@ use crate::integrations_pb::{
 /// This struct is used to request to add liquidity from the Darklake Integrations service.
 #[derive(Debug, Clone)]
 pub struct AddLiquidityRequest {
+    /// The mint address of the token X.
     pub token_mint_x: String,
+    /// The mint address of the token Y.
     pub token_mint_y: String,
+    /// The wallet address of the user.
     pub user_address: String,
+    /// The desired amount of pool liquidity tokens.
     pub amount_lp: u64,
+    /// The maximum amount of token X to add.
     pub max_amount_x: u64,
+    /// The maximum amount of token Y to add.
     pub max_amount_y: u64,
+    /// The referral code.
     pub ref_code: String,
+    /// The label to attach, 10 chars max.
     pub label: String,
 }
 
@@ -31,6 +39,7 @@ pub struct AddLiquidityRequest {
 /// This struct is used to response to add liquidity from the Darklake Integrations service.
 #[derive(Debug, Clone)]
 pub struct AddLiquidityResponse {
+    /// Base64 encoded unsigned transaction to send to the wallet for sign & execute.
     pub unsigned_transaction: String,
 }
 
@@ -68,13 +77,21 @@ impl From<AddLiquidityRequest> for ProtoAddLiquidityRequest {
 /// This struct is used to request to remove liquidity from the Darklake Integrations service.
 #[derive(Debug, Clone)]
 pub struct RemoveLiquidityRequest {
+    /// The mint address of the token X.
     pub token_mint_x: String,
+    /// The mint address of the token Y.
     pub token_mint_y: String,
+    /// The wallet address of the user.
     pub user_address: String,
+    /// The desired amount of pool liquidity tokens.
     pub amount_lp: u64,
+    /// The minimum amount of token X to remove.
     pub min_amount_x: u64,
+    /// The minimum amount of token Y to remove.
     pub min_amount_y: u64,
+    /// The referral code.
     pub ref_code: String,
+    /// The label to attach, 10 chars max.
     pub label: String,
 }
 
@@ -83,6 +100,7 @@ pub struct RemoveLiquidityRequest {
 /// This struct is used to response to remove liquidity from the Darklake Integrations service.
 #[derive(Debug, Clone)]
 pub struct RemoveLiquidityResponse {
+    /// Base64 encoded unsigned transaction to send to the wallet for sign & execute.
     pub unsigned_transaction: String,
 }
 
