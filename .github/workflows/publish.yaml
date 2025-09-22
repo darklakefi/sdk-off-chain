@@ -34,7 +34,6 @@ jobs:
         run: |-
           cargo release \
             publish \
-            --all-features \
             --allow-branch main \
             --no-confirm \
             --execute
