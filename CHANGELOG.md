@@ -2,7 +2,17 @@
 
 ### 🐛 Bug Fixes
 
+- Fix crates.io pipeline
+## [0.2.1] - 2025-09-22
+
+### 🐛 Bug Fixes
+
 - Add fields for publishing to crates.io
+
+### ⚙️ Miscellaneous Tasks
+
+- Update changelog in develop for v0.2.1 (#13)
+- Update changelog in main for v0.2.1 (#14)
 ## [0.2.0] - 2025-09-22
 
 ### 🚀 Features
