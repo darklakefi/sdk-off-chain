@@ -1,9 +1,12 @@
 [package]
 name = "darklake-sdk-off-chain"
-version = "0.2.0"
+version = "0.2.1"
 edition = "2024"
 description = "Darklake SDK for off-chain integrations"
 license = "MIT"
+documentation = "https://docs.rs/darklake-sdk-off-chain"
+homepage = "https://github.com/darklakefi/sdk-off-chain"
+repository = "https://github.com/darklakefi/sdk-off-chain.git"
 
 [dependencies]
 async-trait = "0.1.89"
